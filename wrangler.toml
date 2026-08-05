@@ -1,0 +1,23 @@
+"$schema" = "./node_modules/wrangler/config-schema.json"
+name = "prebisyuk"
+main = ".open-next/worker.js"
+compatibility_date = "2026-08-05"
+compatibility_flags = [ "nodejs_compat" ]
+
+[assets]
+directory = ".open-next/assets"
+binding = "ASSETS"
+
+[observability]
+enabled = true
+
+# For synced data across phone/laptop, create a D1 database in Cloudflare and
+# then add this block with your real database_id:
+#
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "prebisyuk"
+# database_id = "PASTE_DATABASE_ID_HERE"
+
+[vars]
+GEMINI_MODEL = "gemini-2.5-flash"
