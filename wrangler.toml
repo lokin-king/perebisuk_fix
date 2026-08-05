@@ -14,10 +14,10 @@ enabled = true
 # For synced data across phone/laptop, create a D1 database in Cloudflare and
 # then add this block with your real database_id:
 #
-# [[d1_databases]]
-# binding = "DB"
-# database_name = "prebisyuk"
-# database_id = "PASTE_DATABASE_ID_HERE"
+ [[d1_databases]]
+ binding = "DB"
+ database_name = "prebisyuk"
+ database_id = "fff0ef85-9333-47b8-b266-a082aa893917"
 
 [vars]
 GEMINI_MODEL = "gemini-2.5-flash"
