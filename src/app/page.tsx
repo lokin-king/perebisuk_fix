@@ -133,7 +133,6 @@ export default function Home() {
     }
 
     if (result.state) setState(result.state);
-    localStorage.setItem("prebisyuk:session", selectedUser);
     setActiveUser(selectedUser);
     setPassword("");
   }
@@ -169,6 +168,30 @@ export default function Home() {
     setAngryBecause("");
     setTab("history");
     setNotice("AI відповів і запис збережено в спільній базі.");
+  }
+    async function handleDeleteEntry(id: string) {
+    if (!activeUser) return;
+
+    const confirmed = window.confirm("Точно видалити цей запис з історії?");
+    if (!confirmed) return;
+
+    setSaving(true);
+    const result = await api<ApiResult>("/api/entries", {
+      method: "DELETE",
+      body: JSON.stringify({
+        id,
+        owner: activeUser,
+      }),
+    });
+    setSaving(false);
+
+    if (!result.ok) {
+      setNotice(result.error || "Не вийшло видалити запис.");
+      return;
+    }
+
+    if (result.state) setState(result.state);
+    setNotice("Запис видалено.");
   }
 
   async function handleAddMemory(event: FormEvent<HTMLFormElement>) {
@@ -378,7 +401,19 @@ export default function Home() {
                 {currentEntries.length ? (
                   currentEntries.map((entry) => (
                     <article key={entry.id} className="rounded-lg border border-[#dccfc8] bg-white p-4 dark:border-[#33383a] dark:bg-[#181b1d]">
-                      <div className="mb-3 text-sm text-[#7c625c] dark:text-[#b7aaa5]">{formatDate(entry.createdAt)}</div>
+                      <div className="mb-3 flex items-center justify-between gap-3 text-sm text-[#7c625c] dark:text-[#b7aaa5]">
+                        <span>{formatDate(entry.createdAt)}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteEntry(entry.id)}
+                          disabled={saving}
+                          className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-[#dccfc8] text-[#9b574b] transition hover:bg-[#f3ebe6] disabled:opacity-60 dark:border-[#33383a] dark:hover:bg-[#101618]"
+                          title="Видалити запис"
+                          aria-label="Видалити запис"
+                        >
+                          <Trash2 size={17} />
+                        </button>
+                      </div>
                       <h3 className="font-semibold">Образило: {entry.hurt}</h3>
                       <p className="mt-2 text-sm text-[#6d5b56] dark:text-[#c9c0bc]">Причина злості: {entry.angryBecause}</p>
                       <pre className="mt-4 whitespace-pre-wrap rounded-lg bg-[#f3ebe6] p-4 font-sans text-sm leading-7 dark:bg-[#101618]">
