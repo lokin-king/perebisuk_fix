@@ -78,6 +78,7 @@ export default function Home() {
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("prebisyuk:theme");
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDark(savedTheme === "dark");
   }, []);
 
