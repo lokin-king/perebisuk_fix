@@ -77,14 +77,7 @@ export default function Home() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    const savedUser = localStorage.getItem("prebisyuk:session") as Partner | null;
     const savedTheme = localStorage.getItem("prebisyuk:theme");
-    if (savedUser === "sasha" || savedUser === "marina") {
-      // The app keeps only the selected session and theme locally; shared data is in D1.
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setActiveUser(savedUser);
-      setSelectedUser(savedUser);
-    }
     setDark(savedTheme === "dark");
   }, []);
 
