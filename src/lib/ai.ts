@@ -40,7 +40,10 @@ async function askGemini(env: RuntimeEnv, entry: DraftEntry, memories: Memory[])
 
   if (!response.ok) {
   console.error("Gemini status:", response.status);
-  console.error(await response.text());
+
+  const error = await response.text();
+  console.error("Gemini error:", error);
+
   return "";
 }
 
