@@ -5,9 +5,13 @@ type DraftEntry = Pick<ConflictEntry, "owner" | "partner" | "hurt" | "angryBecau
 
 export async function generateAiAnswer(env: RuntimeEnv, entry: DraftEntry, memories: Memory[]) {
   if (env.GEMINI_API_KEY) {
-    const answer = await askGemini(env, entry, memories).catch(() => "");
-    if (answer.trim()) return answer.trim();
-  }
+  const answer = await askGemini(env, entry, memories).catch((err) => {
+    console.error("Gemini error:", err);
+    return "";
+  });
+
+  if (answer.trim()) return answer.trim();
+}
 
   return makeFallbackAnswer(entry, memories);
 }
@@ -34,13 +38,21 @@ async function askGemini(env: RuntimeEnv, entry: DraftEntry, memories: Memory[])
     },
   );
 
-  if (!response.ok) return "";
+  if (!response.ok) {
+  console.error("Gemini status:", response.status);
+  console.error(await response.text());
+  return "";
+}
 
-  const data = (await response.json()) as {
-    candidates?: { content?: { parts?: { text?: string }[] } }[];
-  };
+const data = (await response.json()) as {
+  candidates?: { content?: { parts?: { text?: string }[] } }[];
+};
 
-  return data.candidates?.[0]?.content?.parts?.map((part) => part.text ?? "").join("\n") ?? "";
+console.log("Gemini response:", JSON.stringify(data, null, 2));
+
+return data.candidates?.[0]?.content?.parts
+  ?.map((part) => part.text ?? "")
+  .join("\n") ?? "";
 }
 
 function buildPrompt(entry: DraftEntry, memories: Memory[]) {
