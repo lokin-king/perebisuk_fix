@@ -1,6 +1,6 @@
 import { generateAiAnswer } from "@/lib/ai";
 import { getRuntimeEnv } from "@/lib/cloudflare";
-import { ensureSchema, insertEntry, isPartner, readAllMemories, readState } from "@/lib/db";
+import { deleteEntry, ensureSchema, insertEntry, isPartner, readAllMemories, readState } from "@/lib/db";
 import { sendTelegram } from "@/lib/telegram";
 import { ConflictEntry, people } from "@/lib/types";
 
@@ -65,4 +65,30 @@ export async function POST(request: Request) {
 
   const state = await readState(env.DB, entry.owner);
   return Response.json({ ok: true, state, entry });
+}
+
+export async function DELETE(request: Request) {
+  const env = await getRuntimeEnv();
+  const body = (await request.json().catch(() => ({}))) as {
+    id?: unknown;
+    owner?: unknown;
+  };
+
+  if (!env.DB) {
+    return Response.json({ ok: false, error: "Потрібно підключити Cloudflare D1 database." }, { status: 503 });
+  }
+
+  if (!isPartner(body.owner)) {
+    return Response.json({ ok: false, error: "Некоректний користувач." }, { status: 400 });
+  }
+
+  if (typeof body.id !== "string" || !body.id.trim()) {
+    return Response.json({ ok: false, error: "Некоректний запис." }, { status: 400 });
+  }
+
+  await ensureSchema(env.DB);
+  await deleteEntry(env.DB, body.id, body.owner);
+
+  const state = await readState(env.DB, body.owner);
+  return Response.json({ ok: true, state });
 }
