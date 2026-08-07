@@ -16,6 +16,7 @@ import {
   ShieldCheck,
   Sparkles,
   Sun,
+  Trash2,
   UserRound,
 } from "lucide-react";
 import { FormEvent, ReactNode, useEffect, useMemo, useState } from "react";
