@@ -142,6 +142,13 @@ export async function insertEntry(db: D1DatabaseLike, entry: ConflictEntry) {
     .run();
 }
 
+export async function deleteEntry(db: D1DatabaseLike, id: string, owner: Partner) {
+  await db
+    .prepare("DELETE FROM conflict_entries WHERE id = ? AND owner_id = ?")
+    .bind(id, owner)
+    .run();
+}
+
 function toMemory(row: MemoryRow): Memory {
   return {
     id: row.id,
